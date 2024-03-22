@@ -91,6 +91,8 @@ f <- paste("data/temp2/", f, sep = "")
 
 
 ### write a function to sum all pixels for each raster in list
+### this function also converts untis from g/m2/yr to Tg/yr
+
 annual_sum <- function(r){
   output <- raster(r)
   a <- area(output)
@@ -99,7 +101,7 @@ annual_sum <- function(r){
   return(sum(values(output))/10^12)
 }
 
-### this function also converts untis from g/m2/yr to Tg/yr
+### apply the function over all rasters in the directory
 CH4_Tg_yr <- lapply(f, annual_sum)
 
 }
