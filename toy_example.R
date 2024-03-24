@@ -11,29 +11,25 @@ dTemp <- read.csv("data/Global_temperature_projections.csv")
 
 ### read in global wetland methane projection (this is all methane from wetlands in Tg/yr)
 
-wCH4 <- read.csv("data/Global_methane_projections.csv")
-
-
-
-
+wCH4_Z <- read.csv("data/Global_methane_projections.csv")   ### from Zhang
 
 ### using 1980 as a baseline -- how does additional methane (2020-2099) relate to global temperature anomally
 
 #rcp 2.6
-CH4.rcp26 <- wCH4[60:139, 2] - wCH4[20,2]  ## additional methane in Tg/yr
-dT.rcp26 <- dTemp[26:105, 2]
+CH4.rcp26 <- wCH4_Z[60:139, 2] - wCH4_Z[20,2]  ## additional methane in Tg/yr
+dT.rcp26 <- dTemp[26:105, 3]
 
 #rcp 4.5
-CH4.rcp45 <- wCH4[60:139, 3] - wCH4[20,3]  ## additional methane in Tg/yr
-dT.rcp45 <- dTemp[26:105, 3]
+CH4.rcp45 <- wCH4_Z[60:139, 3] - wCH4_Z[20,3]  ## additional methane in Tg/yr
+dT.rcp45 <- dTemp[26:105, 4]
 
 #rcp 6.0
-CH4.rcp60 <- wCH4[60:139, 4] - wCH4[20,4]  ## additional methane in Tg/yr
-dT.rcp60 <- dTemp[26:105, 4]
+CH4.rcp60 <- wCH4_Z[60:139, 4] - wCH4_Z[20,4]  ## additional methane in Tg/yr
+dT.rcp60 <- dTemp[26:105, 5]
 
 #rcp 8.5
-CH4.rcp85 <- wCH4[60:139, 5] - wCH4[20,5]  ## additional methane in Tg/yr
-dT.rcp85 <- dTemp[26:105, 5]
+CH4.rcp85 <- wCH4_Z[60:139, 5] - wCH4_Z[20,5]  ## additional methane in Tg/yr
+dT.rcp85 <- dTemp[26:105, 7]
 
 
 plot(dT.rcp26, CH4.rcp26, pch = 16, cex = 0.7, col = "#121212dd", 
@@ -45,21 +41,76 @@ points(dT.rcp85, CH4.rcp85, pch = 16, cex = 0.7, col = "#00ffdd")
 
 
 all.temp <- c(dT.rcp26, dT.rcp45, dT.rcp60, dT.rcp85)
-all.CH4 <- c(CH4.rcp26, CH4.rcp45, CH4.rcp60, CH4.rcp85)
+Zhang.CH4 <- c(CH4.rcp26, CH4.rcp45, CH4.rcp60, CH4.rcp85)
 col <- rep(c("#121212dd", "#ff0000dd", "#0000FFdd", "#00ffdddd"), each = 80)
 
 
 
-plot(all.temp, all.CH4, pch = 16, cex = 0.7, col = col,
+plot(all.temp, Zhang.CH4, pch = 16, cex = 0.7, col = col,
      xlab = "Global Temperature Anomally (K)", 
      ylab = "Additional CH4 (Tg yr^-1)")
 legend("topleft", legend = c("RCP 2.6", "RCP 4.5", "RCP 6.0", "RCP 8.5"), 
        pch = 16, cex = 0.7, col = c("#121212dd", "#ff0000dd", "#0000FFdd", "#00ffdddd"))
-fit <- lm(all.CH4 ~ all.temp)
+fit <- lm(Zhang.CH4 ~ all.temp)
 abline(fit)
 summary(fit)
 text(3, 175, "y = 43.95x - 26.72\n R^2 = 0.98")
 
+
+
+#### for Kleinen data
+
+wCH4_K <- read.csv("data/Global_methane_projections_kleinen.csv")   ### from Zhang
+
+#ssp 1.9
+CH4.ssp19 <- wCH4_K[60:139, 2] - wCH4_K[20,2]  ## additional methane in Tg/yr
+dT.ssp19 <- dTemp[26:105, 2]
+
+#ssp 2.6
+CH4.ssp26 <- wCH4_K[60:139, 3] - wCH4_K[20,3]  ## additional methane in Tg/yr
+dT.ssp26 <- dTemp[26:105, 3]
+
+#ssp 4.5
+CH4.ssp45 <- wCH4_K[60:139, 4] - wCH4_K[20,4]  ## additional methane in Tg/yr
+dT.ssp45 <- dTemp[26:105, 4]
+
+#ssp 7.0
+CH4.ssp70 <- wCH4_K[60:139, 5] - wCH4_K[20,5]  ## additional methane in Tg/yr
+dT.ssp70 <- dTemp[26:105, 6]
+
+#ssp 8.5
+CH4.ssp85 <- wCH4_K[60:139, 6] - wCH4_K[20,6]  ## additional methane in Tg/yr
+dT.ssp85 <- dTemp[26:105, 7]
+
+
+
+##### plot both together
+
+rcp <- rep(c("rcp26", "rcp45", "rcp60", "rcp85"), each = 80)
+
+plot(all.temp, Zhang.CH4, pch = c(1, 17, 3, 6)[as.factor(rcp)], cex = 0.7, col = "red",
+     xlab = "Global Temperature Anomally (K)", 
+     ylab = "Additional CH4 (Tg yr^-1)", 
+     ylim = c(0,360), 
+     xlim = c(1,5))
+legend("bottomright", legend = c("RCP 2.6", "RCP 4.5", "RCP 6.0", "RCP 8.5"), 
+       pch = c(1,17, 3, 6), cex = 0.7, col = "red")
+fit <- lm(Zhang.CH4 ~ all.temp)
+abline(fit, col = "red")
+summary(fit)
+text(3, 30, "Zhang\ny = 44.0x - 26.7\n R^2 = 0.98", col = "red", cex = 0.9)
+
+Kleinen.temp <- c(dT.ssp19, dT.ssp26, dT.ssp45, dT.ssp70, dT.ssp85)
+Kleinen.CH4 <- c(CH4.ssp19, CH4.ssp26, CH4.ssp45, CH4.ssp70, CH4.ssp85)
+ssp <- rep(c("ssp19", "ssp26", "ssp45", "ssp70", "ssp85"), each = 80)
+
+points(Kleinen.temp, Kleinen.CH4, pch = c(20, 1, 17, 4, 6)[as.factor(ssp)])
+legend("topleft", legend = c("SSP 1.9", "SSP 2.6", "SSP 4.5", "SSP 7.0", "SSP 8.5"), 
+       pch = c(20, 1, 17, 4, 6), cex = 0.7, col = "black")
+fit2 <- lm(Kleinen.CH4 ~ Kleinen.temp)
+abline(fit2)
+summary(fit2)
+text(3, 340, "Kleinen\ny = 79.0x - 62.9\n R^2 = 0.93", col = "black", cex = 0.9)
 
 
 
