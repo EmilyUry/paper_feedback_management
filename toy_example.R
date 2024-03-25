@@ -3,8 +3,8 @@
 
 #### idea generation for the bonus mitigation project
 
-
-
+#### Relationship between Temp and additional CH4 production
+{
 ### read in global temp projection (this is change in temp in K)
 
 dTemp <- read.csv("data/Global_temperature_projections.csv")
@@ -114,8 +114,19 @@ text(3, 340, "Kleinen\ny = 79.0x - 62.9\n R^2 = 0.93", col = "black", cex = 0.9)
 
 
 
+### STORE MODEL COEFFICIENTS
+Z.slope <- fit$coefficients[2]
+Z.int <- fit$coefficients[1]
+K.slope <-  fit2$coefficients[2]
+K.int <-  fit2$coefficients[1]
+
+
+}
+
 
 #### Example 1 - US 2021 Aviation Climate Action Plan
+
+{
 # https://www.faa.gov/sites/faa.gov/files/2021-11/Aviation_Climate_Action_Plan.pdf
 # Net Zero by 2050
 #' "Aircraft engines produce negligible amounts of N2O and CH4, so this plan has 
@@ -196,3 +207,259 @@ S1a.dT[80]
 (dT.rcp45[80] - S1a.dT[80])/dT.rcp45[80]*100
 
 (S1.dT[80] - S1a.dT[80])/S1.dT[80]*100
+
+}
+
+
+
+#### Example 2 -- Achieving net zero in the global transportation sector by 2050
+##
+
+### Run baseline MAGICC scenarios
+### output: baseline global temperature anomaly
+baseline_45 <- read.csv("data/MAGICC/Outputs/Baseline/Baseline_ssp245_magicc_202403250948.csv", header = TRUE)
+baseline_45[16,118]
+baseline_85 <- read.csv("data/MAGICC/Outputs/Baseline/Baseline_ssp585_magicc_202403251009.csv", header = TRUE)
+baseline_85[16,118]
+
+## 7290 Mt reduction in CO2 beginning in 2050 
+## introduce this change into the MAGICC template for RCP 4.5
+
+### add additional methane to the baseline scenario
+### Zhang, RCP 4.6
+#2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2099
+additional_methane.Z4.5 <- wCH4_Z[c(60, 70, 80, 90, 100, 110, 120, 130, 139),3] - wCH4_Z[20,3]
+additional_methane.Z8.5 <- wCH4_Z[c(60, 70, 80, 90, 100, 110, 120, 130, 139),5] - wCH4_Z[20,5]
+
+additional_methane.K4.5 <- wCH4_K[c(60, 70, 80, 90, 100, 110, 120, 130, 139),4] - wCH4_K[20,4]
+additional_methane.K8.5 <- wCH4_K[c(60, 70, 80, 90, 100, 110, 120, 130, 139),6] - wCH4_K[20,6]
+
+
+template <- read.csv("data/MAGICC/Templates/Baseline/rcmip_ssp245_template.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane <- template[2, c(7:15)]
+methane_additional <- methane + additional_methane.Z4.5
+template[2, c(7:15)] <- methane_additional
+write.csv(template, "data/MAGICC/Templates/Baseline_additional_wetland_methane/ssp245_zhang.csv", 
+          row.names = FALSE)
+
+methane_additional <- methane + additional_methane.K4.5
+template[2, c(7:15)] <- methane_additional
+write.csv(template, "data/MAGICC/Templates/Baseline_additional_wetland_methane/ssp245_kleinen.csv", 
+          row.names = FALSE)
+
+
+template <- read.csv("data/MAGICC/Templates/Baseline/rcmip_ssp585_template.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane_additional <- methane + additional_methane.Z8.5
+template[2, c(7:15)] <- methane_additional
+write.csv(template, "data/MAGICC/Templates/Baseline_additional_wetland_methane/ssp585_zhang.csv", 
+          row.names = FALSE)
+
+methane_additional <- methane + additional_methane.K8.5
+template[2, c(7:15)] <- methane_additional
+write.csv(template, "data/MAGICC/Templates/Baseline_additional_wetland_methane/ssp585_kleinen.csv", 
+          row.names = FALSE)
+
+
+
+### Output: effect on global temperature anomaly
+baseline_45z <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp245_zhang_magicc_202403251020.csv", header = TRUE)
+baseline_45z[16,118]
+baseline_45k <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp245_kleinen_magicc_202403251018.csv", header = TRUE)
+baseline_45k[16,118]
+baseline_85z <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp85_zhang_magicc_202403251030.csv", header = TRUE)
+baseline_85z[16,118]
+baseline_85k <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp85_kleinen_magicc_202403251033.csv", header = TRUE)
+baseline_85k[16,118]
+
+
+#### along with the additional methane, take away the CO2 associated with 
+#### the global transportation sector reaching net zero
+
+
+
+template <- read.csv("data/MAGICC/Templates/Baseline/rcmip_ssp245_template.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane <- template[2, c(7:15)]
+methane_additional <- methane + additional_methane.Z4.5
+template[2, c(7:15)] <- methane_additional
+CO2 <- template[5, c(10:15)]
+CO2_modified <- CO2 - 7290
+template[5, c(10:15)] <- CO2_modified
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_Global_transport/ssp245_zhang.csv", 
+          row.names = FALSE)
+
+
+methane_additional <- methane + additional_methane.K4.5
+template[2, c(7:15)] <- methane_additional
+CO2 <- template[5, c(10:15)]
+CO2_modified <- CO2 - 7290
+template[5, c(10:15)] <- CO2_modified
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_Global_transport/ssp245_kleinen.csv", 
+          row.names = FALSE)
+
+
+template <- read.csv("data/MAGICC/Templates/Baseline/rcmip_ssp585_template.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane_additional <- methane + additional_methane.Z8.5
+template[2, c(7:15)] <- methane_additional
+CO2 <- template[5, c(10:15)]
+CO2_modified <- CO2 - 7290
+template[5, c(10:15)] <- CO2_modified
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_Global_transport/ssp585_zhang.csv", 
+          row.names = FALSE)
+
+methane_additional <- methane + additional_methane.K8.5
+template[2, c(7:15)] <- methane_additional
+CO2 <- template[5, c(10:15)]
+CO2_modified <- CO2 - 7290
+template[5, c(10:15)] <- CO2_modified
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_Global_transport/ssp585_kleinen.csv", 
+          row.names = FALSE)
+
+
+
+
+
+
+
+
+#### call in the resulting output effect on global temperature
+
+## ssp 4.5 Zhang
+baseline_awm_45z <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp245_zhang_magicc_202403251020.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+baseline_awm_45z_temp <- baseline_awm_45z[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+output_awm_gt_45z <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport/awm_global_transport_ssp245_zhang_magicc_202403251103.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+output_awm_gt_45z_temp <- output_awm_gt_45z[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+additional_methane <- Z.slope*baseline_awm_45z_temp + Z.int
+less_methane <- Z.slope*output_awm_gt_45z_temp + Z.int
+methane.difference.45Z <- additional_methane - less_methane  ##Tg/year
+
+
+
+## ssp 4.5  Kleinen
+
+baseline_awm_45k <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp245_kleinen_magicc_202403251018.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+baseline_awm_45k_temp <- baseline_awm_45k[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+output_awm_gt_45k <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport/awm_global_transport_ssp245_kleinen_magicc_202403251102.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+output_awm_gt_45k_temp <- output_awm_gt_45k[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+additional_methane <- K.slope*baseline_awm_45k_temp + K.int
+less_methane <- K.slope*output_awm_gt_45k_temp + K.int
+methane.difference.45K <- additional_methane - less_methane  ##Tg
+
+
+
+## ssp 8.5 Zhang
+baseline_awm_85z <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp85_zhang_magicc_202403251030.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+baseline_awm_85z_temp <- baseline_awm_85z[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+output_awm_gt_85z <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport/awm_global_transport_ssp585_zhang_magicc_202403251102.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+output_awm_gt_85z_temp <- output_awm_gt_85z[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+additional_methane <- Z.slope*baseline_awm_85z_temp + Z.int
+less_methane <- Z.slope*output_awm_gt_85z_temp + Z.int
+methane.difference.85Z <- additional_methane - less_methane  ##Tg/year
+
+
+## ssp 4.5  Kleinen
+
+baseline_awm_85k <- read.csv("data/MAGICC/Outputs/Baseline_additional_wetland_methane/AWM_ssp85_kleinen_magicc_202403251033.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+baseline_awm_85k_temp <- baseline_awm_85k[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+output_awm_gt_85k <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport/awm_global_transport_ssp585_kleinen_magicc_202403251103.csv", header = TRUE)
+## temp in 2020, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100
+output_awm_gt_85k_temp <- output_awm_gt_85k[16,c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
+
+additional_methane <- K.slope*baseline_awm_85k_temp + K.int
+less_methane <- K.slope*output_awm_gt_85k_temp + K.int
+methane.difference.85K <- additional_methane - less_methane  ##Tg
+
+
+### incorporate these methane reductions into new MAGICC templates
+
+### Zhang 4.5
+template <- read.csv("data/MAGICC/Templates/Baseline_awm_Global_transport/ssp245_zhang.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane <- template[2, c(7:15)]
+methane_reduction <- methane - methane.difference.45Z
+template[2, c(7:15)] <- methane_reduction
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_gt_wetland_methane_reduction/ssp245_zhang.csv", 
+          row.names = FALSE)
+
+
+### Kleinen 4.5
+template <- read.csv("data/MAGICC/Templates/Baseline_awm_Global_transport/ssp245_kleinen.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane <- template[2, c(7:15)]
+methane_reduction <- methane - methane.difference.45K
+template[2, c(7:15)] <- methane_reduction
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_gt_wetland_methane_reduction/ssp245_kleinen.csv", 
+          row.names = FALSE)
+
+
+### Zhang 8.5
+template <- read.csv("data/MAGICC/Templates/Baseline_awm_Global_transport/ssp585_zhang.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane <- template[2, c(7:15)]
+methane_reduction <- methane - methane.difference.85Z
+template[2, c(7:15)] <- methane_reduction
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_gt_wetland_methane_reduction/ssp585_zhang.csv", 
+          row.names = FALSE)
+
+
+### Kleinen 8.5
+template <- read.csv("data/MAGICC/Templates/Baseline_awm_Global_transport/ssp585_kleinen.csv", header = TRUE)
+names <- c("model", "region", "scenario","unit", "variable", 
+           "2015", "2020", "2030", "2040", "2050", "2060", "2070", "2080", "2090", "2100")
+names(template) <- names
+methane <- template[2, c(7:15)]
+methane_reduction <- methane - methane.difference.85K
+template[2, c(7:15)] <- methane_reduction
+write.csv(template, "data/MAGICC/Templates/Baseline_awm_gt_wetland_methane_reduction/ssp585_kleinen.csv", 
+          row.names = FALSE)
+
+
+
+### Final outputs
+
+overall_45z <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport_AMR/final_ssp245_zhang_magicc_202403251133.csv", header = TRUE)
+overall_45z[16,118]
+overall_45k <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport_AMR/final_ssp245_kleinen_magicc_202403251131.csv", header = TRUE)
+overall_45k[16,118]
+overall_85z <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport_AMR/final_ssp585_zhang_magicc_202403251134.csv", header = TRUE)
+overall_85z[16,118]
+overall_85k <- read.csv("data/MAGICC/Outputs/Baseline_AWM_global_transport_AMR/final_ssp585_kleinen_magicc_202403251133.csv", header = TRUE)
+overall_85k[16,118]
+
+## percent difference
+(output_awm_gt_45z[16,118] - overall_45z[16,118])/output_awm_gt_45z[16,118]*100
+(output_awm_gt_45k[16,118] - overall_45k[16,118])/output_awm_gt_45k[16,118]*100
+
+(output_awm_gt_85z[16,118] - overall_85z[16,118])/output_awm_gt_85z[16,118]*100
+(output_awm_gt_85k[16,118] - overall_85k[16,118])/output_awm_gt_85k[16,118]*100
