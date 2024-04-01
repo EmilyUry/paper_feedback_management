@@ -3,6 +3,10 @@
 
 #### idea generation for the bonus mitigation project
 
+library(ggplot2)
+
+
+
 #### Relationship between Temp and additional CH4 production
 {
 ### read in global temp projection (this is change in temp in K)
@@ -62,6 +66,8 @@ text(3, 175, "y = 43.95x - 26.72\n R^2 = 0.98")
 
 wCH4_K <- read.csv("data/Global_methane_projections_kleinen.csv")   ### from Zhang
 
+#plot(wCH4_K$year, wCH4_K$CH4_Tg_yr_ssp19)
+
 #ssp 1.9
 CH4.ssp19 <- wCH4_K[60:139, 2] - wCH4_K[20,2]  ## additional methane in Tg/yr
 dT.ssp19 <- dTemp[26:105, 2]
@@ -119,6 +125,51 @@ Z.slope <- fit$coefficients[2]
 Z.int <- fit$coefficients[1]
 K.slope <-  fit2$coefficients[2]
 K.int <-  fit2$coefficients[1]
+
+
+
+
+## version 2 - kleinen only with high and low generated from prediction interval
+
+
+fit2 <- lm(Kleinen.CH4 ~ Kleinen.temp)
+summary(fit2)
+new.dat <- data.frame(Kleinen.temp = c(1,2,3,4,5))
+predict(fit2, newdata = new.dat, interval = 'confidence') ## 95% confidence interval
+
+
+y.new <- predict(fit2, new.dat)
+lwr <- predict(fit2, newdata = new.dat, interval = 'prediction')[,2]
+upr <- predict(fit2, newdata = new.dat, interval = 'prediction')[,3]
+lwr.ci <- predict(fit2, newdata = new.dat, interval = 'confidence')[,2]
+upr.ci <- predict(fit2, newdata = new.dat, interval = 'confidence')[,3]
+
+# for plotting
+x.new <- c(1:5)
+
+plot(Kleinen.temp, Kleinen.CH4, pch = c(20, 1, 17, 4, 6)[as.factor(ssp)], 
+     xlab = "Global Temperature Anomaly (K)", 
+     ylab = "Wetland Methane Emissions (Tg/yr)")
+legend("topleft", legend = c("SSP 1.9", "SSP 2.6", "SSP 4.5", "SSP 7.0", "SSP 8.5"), 
+       pch = c(20, 1, 17, 4, 6), cex = 0.7, col = "black")
+polygon(c(x.new, rev(x.new)), c(lwr.ci, rev(upr.ci)), col = '#00000055', border = NA)
+points(x.new, y.new, type = 'l', col = "blue", lwd = 2)
+# points(x.new, lwr.ci, type = 'l', col = "#00000055", lwd = 2)
+# points(x.new, upr.ci, type = 'l', col = "#00000055", lwd = 2)
+points(x.new, lwr, type = 'l', col = "red")
+points(x.new, upr, type = 'l', col = "red")
+text(2.5, 300, "Kleinen\ny = 79.0x - 62.9\n R^2 = 0.93", col = "black", cex = 0.9)
+
+### prediction ranges, upper/lower
+
+fit.upper <- lm(upr~x.new)
+fit.lower <- lm(lwr~x.new)
+
+
+slope.high <- fit.upper$coefficients[2]
+int.high <- fit.upper$coefficients[1]
+slope.low <-  fit.lower$coefficients[2]
+int.low <-  fit.lower$coefficients[1]
 
 
 }
