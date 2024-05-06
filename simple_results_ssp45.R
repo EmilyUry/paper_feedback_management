@@ -317,12 +317,14 @@ multi_K[5, 118]
 ## temp change
 dMK <- round(multi_sector[5,118] - multi_K[5, 118],3)
 pMK <- round(dMK/multi_sector[5,118]*100,3)
+pMK <- round(-dMK/dTemp_multi[1,9]*100,3)
 
 multi_Z <- read.csv("data/MAGICC45/Outputs/Final/Multi_Z_magicc_202405021350.csv", header = TRUE)
 multi_Z[5, 118]
 ## temp change
 dMZ <- round(multi_sector[5,118] - multi_Z[5, 118],3)
 pMZ <- round(dMZ/multi_sector[5,118]*100, 3)
+pMZ <- round(-dMZ/dTemp_multi[1,9]*100,3)
 
 
 single_K <- read.csv("data/MAGICC45/Outputs/Final/Single_K_magicc_202405021350.csv", header = TRUE)
@@ -330,18 +332,20 @@ single_K[5, 118]
 ## temp change
 dSK <- round(single_sector[5,118] - single_K[5, 118],3)
 pSK <- round(dSK/single_sector[5,118]*100,3)
+pSK <- round(-dSK/dTemp_single[1,9]*100,3)
+
 
 single_Z <- read.csv("data/MAGICC45/Outputs/Final/Single_Z_magicc_202405021350.csv", header = TRUE)
 single_Z[5, 118]
 ## temp change
 dSZ <- round(single_sector[5,118] - single_Z[5, 118],3)
 pSZ <- round(dSZ/single_sector[5,118]*100,3)
-
+pSZ <- round(-dSZ/dTemp_single[1,9]*100,3)
 
 ### Results table  -- temp anomaly (K) in 20100
 row1 <- c("Baseline", baseline[16, 118], baseline[16, 118] )
 row2 <- c("Baseline + feedback methane", feedback_methane[16,118], feedback_methane[16,118])
-row3 <- c("Climate Intervention", single_sector[5,118], single_sector[5,118])
+row3 <- c("Climate Intervention", single_sector[5,118], multi_sector[5,118])
 row4 <- c("Change in temp", round(dTemp_single[1,9], 5), dTemp_multi[1,9] )
 row5 <- c("Methane reduction", paste(dCH4_single_Z[1,9], "to", dCH4_single_K[1,9]), 
           paste(dCH4_multi_Z[1,9], "to", dCH4_multi_K[1,9]))
