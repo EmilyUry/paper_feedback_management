@@ -246,13 +246,13 @@ dTemp_multi <- multi_sector[5, c(38, 48, 58, 68, 78, 88, 98, 108, 118)] -
   feedback_methane[16, c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
 
 ## Kleinen et al. 2021
-dCH4_single_K <- round(K.slope*dTemp_single + K.int, 3)
-dCH4_multi_K <- round(K.slope*dTemp_multi + K.int, 3)
+dCH4_single_K <- round(K.slope*dTemp_single, 3)
+dCH4_multi_K <- round(K.slope*dTemp_multi, 3)
 
 
 ## Zhang
-dCH4_single_Z <- round(Z.slope*dTemp_single + Z.int, 3)
-dCH4_multi_Z <- round(Z.slope*dTemp_multi+ Z.int, 3)
+dCH4_single_Z <- round(Z.slope*dTemp_single , 3)
+dCH4_multi_Z <- round(Z.slope*dTemp_multi, 3)
 
 
 
@@ -312,14 +312,14 @@ write.csv(template, "data/MAGICC45/Templates/Final/Multi_Z.csv",
 
 ## read in final results and get temperature
 
-multi_K <- read.csv("data/MAGICC45/Outputs/Final/multi_K_magicc_202405021350.csv", header = TRUE)
+multi_K <- read.csv("data/MAGICC45/Outputs/Final/Multi_K2_magicc_202405061624.csv", header = TRUE)
 multi_K[5, 118]
 ## temp change
 dMK <- round(multi_sector[5,118] - multi_K[5, 118],3)
 pMK <- round(dMK/multi_sector[5,118]*100,3)
 pMK <- round(-dMK/dTemp_multi[1,9]*100,3)
 
-multi_Z <- read.csv("data/MAGICC45/Outputs/Final/Multi_Z_magicc_202405021350.csv", header = TRUE)
+multi_Z <- read.csv("data/MAGICC45/Outputs/Final/Multi_Z2_magicc_202405061624.csv", header = TRUE)
 multi_Z[5, 118]
 ## temp change
 dMZ <- round(multi_sector[5,118] - multi_Z[5, 118],3)
@@ -327,7 +327,7 @@ pMZ <- round(dMZ/multi_sector[5,118]*100, 3)
 pMZ <- round(-dMZ/dTemp_multi[1,9]*100,3)
 
 
-single_K <- read.csv("data/MAGICC45/Outputs/Final/Single_K_magicc_202405021350.csv", header = TRUE)
+single_K <- read.csv("data/MAGICC45/Outputs/Final/Single_K2_magicc_202405061625.csv", header = TRUE)
 single_K[5, 118]
 ## temp change
 dSK <- round(single_sector[5,118] - single_K[5, 118],3)
@@ -335,7 +335,7 @@ pSK <- round(dSK/single_sector[5,118]*100,3)
 pSK <- round(-dSK/dTemp_single[1,9]*100,3)
 
 
-single_Z <- read.csv("data/MAGICC45/Outputs/Final/Single_Z_magicc_202405021350.csv", header = TRUE)
+single_Z <- read.csv("data/MAGICC45/Outputs/Final/Single_Z2_magicc_202405061625.csv", header = TRUE)
 single_Z[5, 118]
 ## temp change
 dSZ <- round(single_sector[5,118] - single_Z[5, 118],3)
