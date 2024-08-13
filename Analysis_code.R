@@ -1,25 +1,18 @@
 
-
-
-
-####### Scenario 8.5
-### high/low emissions reductions efforts
+### Code for analysis accompanying the paper titled: 
+# A new perspective on climate feedback loop management
+# Emily A Ury, Zhen Zhang, Brian Buma
 
 
 library(ggplot2)
 
-
-
 ### read in global temp projection (this is change in temp in K)
-
 dTemp <- read.csv("data/Global_temperature_projections.csv")
 
 ### read in global wetland methane projection (this is all methane from wetlands in Tg/yr)
-
 wCH4_Z <- read.csv("data/Global_methane_projections.csv")   ### from Zhang
 
 ### using 1980 as a baseline -- how does additional methane (2020-2099) relate to global temperature anomally
-
 #rcp 2.6
 CH4.rcp26 <- wCH4_Z[60:139, 2] - wCH4_Z[20,2]  ## additional methane in Tg/yr
 dT.rcp26 <- dTemp[26:105, 3]
@@ -36,38 +29,13 @@ dT.rcp60 <- dTemp[26:105, 5]
 CH4.rcp85 <- wCH4_Z[60:139, 5] - wCH4_Z[20,5]  ## additional methane in Tg/yr
 dT.rcp85 <- dTemp[26:105, 7]
 
-
-# plot(dT.rcp26, CH4.rcp26, pch = 16, cex = 0.7, col = "#121212dd", 
-#      ylim = c(0, 200), xlim = c(1, 5))
-# points(dT.rcp45, CH4.rcp45, pch = 16, cex = 0.7, col = "#ff0000dd")
-# points(dT.rcp60, CH4.rcp60, pch = 16, cex = 0.7, col = "#0000ffdd")
-# points(dT.rcp85, CH4.rcp85, pch = 16, cex = 0.7, col = "#00ffdd")
-# 
-# 
-# 
+## combine
 all.temp <- c(dT.rcp26, dT.rcp45, dT.rcp60, dT.rcp85)
 Zhang.CH4 <- c(CH4.rcp26, CH4.rcp45, CH4.rcp60, CH4.rcp85)
-# col <- rep(c("#121212dd", "#ff0000dd", "#0000FFdd", "#00ffdddd"), each = 80)
-# 
-# 
-# 
-# plot(all.temp, Zhang.CH4, pch = 16, cex = 0.7, col = col,
-#      xlab = "Global Temperature Anomally (K)", 
-#      ylab = "Additional CH4 (Tg yr^-1)")
-# legend("topleft", legend = c("RCP 2.6", "RCP 4.5", "RCP 6.0", "RCP 8.5"), 
-#        pch = 16, cex = 0.7, col = c("#121212dd", "#ff0000dd", "#0000FFdd", "#00ffdddd"))
-# fit <- lm(Zhang.CH4 ~ all.temp)
-# abline(fit)
-# summary(fit)
-# text(3, 175, "y = 43.95x - 26.72\n R^2 = 0.98")
-
 
 
 #### for Kleinen data
-
 wCH4_K <- read.csv("data/Global_methane_projections_kleinen.csv")   ### from Zhang
-
-#plot(wCH4_K$year, wCH4_K$CH4_Tg_yr_ssp19)
 
 #ssp 1.9
 CH4.ssp19 <- wCH4_K[60:139, 2] - wCH4_K[20,2]  ## additional methane in Tg/yr
@@ -130,14 +98,24 @@ K.int <-  fit2$coefficients[1]
 
 
 
+### write out data
+year <- rep(seq(2020,2099,1),9)
+temperature <- c(all.temp, Kleinen.temp)
+methane <- c(Zhang.CH4, Kleinen.CH4)
+source <- c(rep("Zhang", 320), rep("Kleinen", 400))
+scenario <- rep(c("rcp26", "rcp45", "rcp60", "rcp85", "ssp19", "ssp26", "ssp45", "ssp70", "ssp85"), each = 80)
+plot.data <- data.frame(year, source, scenario, temperature, methane)
+
+write.csv(plot.data, "data/source_data.csv", row.names = F)
+
+
+
 
 
 #### add additional wetland methane to the template
 additional_methane45 <- wCH4_K[c(60, 70, 80, 90, 100, 110, 120, 130, 139), 4] - wCH4_K[20,4]
-#additional_methane85 <- wCH4_K[c(60, 70, 80, 90, 100, 110, 120, 130, 139), 6] - wCH4_K[20,6]
-
 additional_methane45
-#additional_methane85
+
 
 ## adjust template for additional methane
 template <- read.csv("data/MAGICC45/Templates/Baseline/rcmip_ssp245_template.csv", header = TRUE)
@@ -152,36 +130,40 @@ write.csv(template, "data/MAGICC45/Templates/Feedback_methane/rcmip_ssp245_templ
 
 #
 ###
-##### RUN MAGICC 2x (external): Baseline 4.5 and baseline + additional methane
+##### RUN MAGICC 2x (external): Baseline 4.5 and baseline + additional methane, probabalistic
 ###
 #
 
 
 ### read in results
-baseline <- read.csv("data/MAGICC45/Outputs/Baseline/baseline_single_45_magicc_202405020937.csv", header = TRUE)
-feedback_methane <- read.csv("data/MAGICC45/Outputs/Feedback_methane/baseline_single_45_additional_methane_magicc_202405020938.csv", header = TRUE)
+baseline <- read.csv("data/MAGICC45/Outputs/Baseline/baseline_prob_45_magicc_202406080858.csv", header = TRUE)
+feedback_methane <- read.csv("data/MAGICC45/Outputs/Feedback_methane/baseline_prob_45_additional_methane_magicc_202406100910.csv", header = TRUE)
 
 ## temp in 2100
 # baseline
 baseline[16, 118]
+## 95% confidence interval, from web graphic: 2.03 - 3.74
 feedback_methane[16,118]
+## 95% confidence interval, from web graphic: 2.03 - 3.74
 
 
+## Scenario 1
 
 #### Climate intervention (single sector (SS))
 #### reducing CO2 emissions by 7290 Mt/year beginning in 2050
-#### aligns with acheiving net zero across the global transportation sector
+#### aligns with achieving net zero across the global transportation sector
 
 reduction <- c(0,0,0,0, 7290, 7290, 7290, 7290, 7290, 7290)
 
-# 4.5 2015-2100: 
+# 4.5 2015-2100 (from the Magicc input template): 
 CO2_45 <-c(35635.3,	37388.1,	40594.7,	42088.6,	42961.3,	41736.4,	37446.6,	30235.7,	20641.5,	14482.9)
 
 new_CO2_SS <- CO2_45 - reduction
 
+## Scenario 2
 
 #### climate intervention (multi-sector (MS))
-#### reducing CO2 emissions to align with the agressive climate mitigation scenarios (SSP 1.9 or 2.6)
+#### reducing CO2 emissions to align with the aggressive climate mitigation scenarios (SSP 1.9 or 2.6)
 
 # 4.5 2015-2100: 
 CO2_45 <-c(35635.3,	37388.1,	40594.7,	42088.6,	42961.3,	41736.4,	37446.6,	30235.7,	20641.5,	14482.9)
@@ -223,26 +205,28 @@ write.csv(template, "data/MAGICC45/Templates/Interventions/Multi_sector_template
 
 ### get ouputs: temperature in 2100 following intervention
 
-multi_sector <- read.csv("data/MAGICC45/Outputs/Interventions/multi_sector_45_magicc_202405021330.csv", header = TRUE)
-multi_sector[5, 118]
-feedback_methane[16,118] - multi_sector[5, 118]
+multi_sector <- read.csv("data/MAGICC45/Outputs/Interventions/prob_S2_45_magicc_202406100920.csv", header = TRUE)
+multi_sector[16, 118]
+## 95% confidence interval, from web graphic: 1.34 - 2.44
+feedback_methane[16,118] - multi_sector[16, 118]
 
 
 #### climate intervention (modest)
 ## Achieving net zero in the global transportation sector by 2050
 ## subtracting 7290 Mt CO2 from emissions in 2050 onward
-single_sector <- read.csv("data/MAGICC45/Outputs/Interventions/single_sector_45_magicc_202405021329.csv", header = TRUE)
-single_sector[5, 118]
-feedback_methane[16,118] - single_sector[5, 118]
+single_sector <- read.csv("data/MAGICC45/Outputs/Interventions/prob_S1_45_magicc_202406100918.csv", header = TRUE)
+single_sector[16, 118]
+## 95% confidence interval, from web graphic: 2.07 - 3.77
+feedback_methane[16,118] - single_sector[16, 118]
 
 
 ###### Estimated reduction in wetland methane production given the reduction in global temp
 
 
-dTemp_single <- single_sector[5, c(38, 48, 58, 68, 78, 88, 98, 108, 118)] - 
+dTemp_single <- single_sector[16, c(38, 48, 58, 68, 78, 88, 98, 108, 118)] - 
   feedback_methane[16, c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
 
-dTemp_multi <- multi_sector[5, c(38, 48, 58, 68, 78, 88, 98, 108, 118)] - 
+dTemp_multi <- multi_sector[16, c(38, 48, 58, 68, 78, 88, 98, 108, 118)] - 
   feedback_methane[16, c(38, 48, 58, 68, 78, 88, 98, 108, 118)]
 
 ## Kleinen et al. 2021
@@ -269,7 +253,7 @@ names(template) <- names
 methane <- template[2, c(7:15)]
 methane_reduction <- methane + dCH4_single_K
 template[2, c(7:15)] <- methane_reduction
-write.csv(template, "data/MAGICC45/Templates/Final/Single_K.csv", 
+write.csv(template, "data/MAGICC45/Templates/Final/Prob_S1_K.csv", 
           row.names = FALSE)
 
 ## Single sector - Zhang
@@ -280,7 +264,7 @@ names(template) <- names
 methane <- template[2, c(7:15)]
 methane_reduction <- methane + dCH4_single_Z
 template[2, c(7:15)] <- methane_reduction
-write.csv(template, "data/MAGICC45/Templates/Final/Single_Z.csv", 
+write.csv(template, "data/MAGICC45/Templates/Final/Prob_S1_Z.csv", 
           row.names = FALSE)
 
 ## Multi sector - Kleinen
@@ -291,7 +275,7 @@ names(template) <- names
 methane <- template[2, c(7:15)]
 methane_reduction <- methane + dCH4_multi_K
 template[2, c(7:15)] <- methane_reduction
-write.csv(template, "data/MAGICC45/Templates/Final/Multi_K.csv", 
+write.csv(template, "data/MAGICC45/Templates/Final/Prob_S2_K.csv", 
           row.names = FALSE)
 
 # Multi sector - Zhang
@@ -302,7 +286,7 @@ names(template) <- names
 methane <- template[2, c(7:15)]
 methane_reduction <- methane + dCH4_multi_Z
 template[2, c(7:15)] <- methane_reduction
-write.csv(template, "data/MAGICC45/Templates/Final/Multi_Z.csv", 
+write.csv(template, "data/MAGICC45/Templates/Final/Prob_S2_Z.csv", 
           row.names = FALSE)
 #
 ###
@@ -312,41 +296,45 @@ write.csv(template, "data/MAGICC45/Templates/Final/Multi_Z.csv",
 
 ## read in final results and get temperature
 
-multi_K <- read.csv("data/MAGICC45/Outputs/Final/Multi_K2_magicc_202405061624.csv", header = TRUE)
-multi_K[5, 118]
+multi_K <- read.csv("data/MAGICC45/Outputs/Final/Prob_S2_K_magicc_202406100948.csv", header = TRUE)
+multi_K[16, 118]
+## 95% confidence interval, from web graphic: 1.28 - 2.34
 ## temp change
-dMK <- round(multi_sector[5,118] - multi_K[5, 118],3)
-pMK <- round(dMK/multi_sector[5,118]*100,3)
+dMK <- round(multi_sector[16,118] - multi_K[16, 118],3)
+#pMK <- round(dMK/multi_sector[16,118]*100,3)
 pMK <- round(-dMK/dTemp_multi[1,9]*100,3)
 
-multi_Z <- read.csv("data/MAGICC45/Outputs/Final/Multi_Z2_magicc_202405061624.csv", header = TRUE)
-multi_Z[5, 118]
+multi_Z <- read.csv("data/MAGICC45/Outputs/Final/Prob_S2_Z_magicc_202406100948.csv", header = TRUE)
+multi_Z[16, 118]
+## 95% confidence interval, from web graphic: 1.31 - 2.38
 ## temp change
-dMZ <- round(multi_sector[5,118] - multi_Z[5, 118],3)
-pMZ <- round(dMZ/multi_sector[5,118]*100, 3)
+dMZ <- round(multi_sector[16,118] - multi_Z[16, 118],3)
+#pMZ <- round(dMZ/multi_sector[16,118]*100, 3)
 pMZ <- round(-dMZ/dTemp_multi[1,9]*100,3)
 
 
-single_K <- read.csv("data/MAGICC45/Outputs/Final/Single_K2_magicc_202405061625.csv", header = TRUE)
-single_K[5, 118]
+single_K <- read.csv("data/MAGICC45/Outputs/Final/Prob_S1_K_magicc_202406100933.csv", header = TRUE)
+single_K[16, 118]
+## 95% confidence interval, from web graphic: 2.06 - 3.76
 ## temp change
-dSK <- round(single_sector[5,118] - single_K[5, 118],3)
-pSK <- round(dSK/single_sector[5,118]*100,3)
+dSK <- round(single_sector[16,118] - single_K[16, 118],3)
+#pSK <- round(dSK/single_sector[16,118]*100,3)
 pSK <- round(-dSK/dTemp_single[1,9]*100,3)
 
 
-single_Z <- read.csv("data/MAGICC45/Outputs/Final/Single_Z2_magicc_202405061625.csv", header = TRUE)
-single_Z[5, 118]
+single_Z <- read.csv("data/MAGICC45/Outputs/Final/Prob_S1_Z_magicc_202406100941.csv", header = TRUE)
+single_Z[16, 118]
+## 95% confidence interval, from web graphic: 2.06 - 3.77
 ## temp change
-dSZ <- round(single_sector[5,118] - single_Z[5, 118],3)
-pSZ <- round(dSZ/single_sector[5,118]*100,3)
+dSZ <- round(single_sector[16,118] - single_Z[16, 118],3)
+#pSZ <- round(dSZ/single_sector[16,118]*100,3)
 pSZ <- round(-dSZ/dTemp_single[1,9]*100,3)
 
 ### Results table  -- temp anomaly (K) in 20100
 row1 <- c("Baseline", baseline[16, 118], baseline[16, 118] )
 row2 <- c("Baseline + feedback methane", feedback_methane[16,118], feedback_methane[16,118])
-row3 <- c("Climate Intervention", single_sector[5,118], multi_sector[5,118])
-row4 <- c("Change in temp", round(dTemp_single[1,9], 5), dTemp_multi[1,9] )
+row3 <- c("Climate Intervention", single_sector[16,118], multi_sector[16,118])
+row4 <- c("Change in temp", round(dTemp_single[1,9], 3), round(dTemp_multi[1,9],3 ))
 row5 <- c("Methane reduction", paste(dCH4_single_Z[1,9], "to", dCH4_single_K[1,9]), 
           paste(dCH4_multi_Z[1,9], "to", dCH4_multi_K[1,9]))
 row6 <- c("Temp reduction (K)", paste(dSZ, "to", dSK), paste(dMZ, "to", dMK))
