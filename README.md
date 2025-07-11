@@ -9,7 +9,7 @@ This repository includes R scripts used to extract data from previously publishe
 
 ## Repository Structure
 
-* Kleinen_data_extract.R # Extracts data from Kleinen et al. 2020
+* Kleinen_data_extract.R # Extracts data from Kleinen et al. 2021
 * Zhang_data_extract.R # Extracts data from Zhang et al. 2017
 * Analysis_code.R # Performs statistical analysis (requires intermediate data outputs to be run through Magicc.org)
 
