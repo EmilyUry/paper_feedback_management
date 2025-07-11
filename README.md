@@ -1,8 +1,8 @@
 # Wetland Methane Feedback Management
 This repository contains the analysis code associated with the scientific publication:
-> **Addressing methane emissions feedbacks from global wetlands**
-> *EA Ury, Z Zhang, B Buma*
-> *Nature Sustainability*
+> **Addressing methane emissions feedbacks from global wetlands.**
+> *EA Ury, Z Zhang, B Buma.*
+> *Nature Sustainability.*
 
 ## Overview
 This repository includes R scripts used to extract data from previously published sources, prepare it for analysis, and perform the statistical analyses reported in the paper.
